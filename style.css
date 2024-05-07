@@ -1,93 +1,96 @@
+/* Importing font */
 @import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap');
+
+/* CSS Variables */
+:root {
+    --font-family: "Tilt Neon", sans-serif;
+    --font-size: 1.8rem;
+    --font-weight: bold;
+    --border-style: 2px solid black;
+}
+
+/* Resetting margin and padding, and setting default font */
 *{
     margin: 0;
     padding: 0;
-    font-family: "Tilt Neon", sans-serif;
+    font-family: var(--font-family);
 }
+
+/* Hiding overflow on body */
 body{
     overflow: hidden;
 }
+
+/* Setting background for container */
 .container{
-    background: url(background.jpg);
-    background-repeat:no-repeat ;
-    background-size:100vw 100vh;
+    background: url(background.jpg) no-repeat;
+    background-size: 100vw 100vh;
     height: 100vh;
 }
-.gameOver,#scoreCont{
-    font-weight: bolder;
+
+/* Setting font weight for game over and score container */
+.gameOver, #scoreCont{
+    font-weight: var(--font-weight);
 }
+
+/* Setting margin for game over */
 .gameOver{
     margin-left: 20px;
 }
+
+/* Styling score container */
 #scoreCont{
     font-size: 1rem;
     align-items: center;
-    border: 2px solid black;
+    border: var(--border-style);
     border-radius: 10px;
     padding: 2px;
     margin-right: 40px;
 }
 
+/* Styling text */
 .text{
     display: flex;
     justify-content: space-between;
     padding-top: 10px;
     align-items: center;
-    font-size: 1.8rem;
+    font-size: var(--font-size);
 }
+
+/* Setting width for image1 */
 .image1{
     width: 70px;
 }
 
+/* Styling final */
 .final{
     font-size: 2rem;
-    font-weight: bold;
+    font-weight: var(--font-weight);
     position: absolute;
     bottom: 70px;
     left:35vw;
     display: none;
 }
 
+/* Styling dino */
 .dino{
-    background: url(dino1.gif); 
-    background-color: black;
-    background-repeat: no-repeat;
+    background: url(dino1.gif) no-repeat;
     background-size: 100% 100%;
-    width: 100px; /* Half of the original width */
-    height: 100px; /* Half of the original height */
+    width: 100px; 
+    height: 80px;
     position: absolute;
-    top: 400px;
+    top: 370px;
     left: 70px;
     transition: left 0.1s linear;
 }
 
+/* Styling obstacle */
 .obstacle{
-    background: url('dino2.png');
-    background-color: aqua;
-    width: 95px; /* Half of the original width */
-    height: 90px; /* Half of the original height */
+    background: url('dino2.png') no-repeat;
     background-size: cover;
-    background-repeat: no-repeat;
+    width: 105px;
+    height: 100px;
     position: absolute;
-    top:400px;
-    left:100vw; /* Set the initial position of the obstacle to the right edge of the window */
-}
-
-@keyframes dino {
-    0%{
-        top:330px;
-    }
-    80%,85%{
-        top:0px;
-    }
-    88%,94%{
-        top:50px;
-    }
-    95%,99%{
-        top:100px;
-    }
-
-    100%{
-        top:330px;
-    }
+    top: 350px;
+    left: 100vw; /* Set the initial position of the obstacle to the right edge of the window */
 }
