@@ -45,7 +45,7 @@ body {
 }
 
 /* Styling score container */
-#scoreCont {
+#score, #level {
   font-size: 1rem;
   align-items: center;
   border: var(--border-style);
@@ -68,16 +68,6 @@ body {
   width: 70px;
 }
 
-/* Styling final */
-.final {
-  font-size: 2rem;
-  font-weight: var(--font-weight);
-  position: absolute;
-  bottom: 70px;
-  left: 35vw;
-  display: none;
-}
-
 /* Styling dino */
 .dino {
   background: url(dino1.gif) no-repeat;
@@ -92,12 +82,10 @@ body {
 
 /* Styling obstacle */
 .obstacle {
-  background: url("dino2.png") no-repeat;
-  background-size: cover;
   width: 105px;
   height: 100px;
   position: absolute;
-  top: 66vh; /* Change this line */
+  top: 66vh;
   left: 100vw; /* Set the initial position of the obstacle to the right edge of the window */
 }
 
