@@ -103,6 +103,28 @@ class Dino {
   }
 }
 
+class Background {
+  constructor(element, speed) {
+    this.speed = speed;
+    this.element = element;
+    this.animationId = null;
+  }
+
+  moveBackground() {
+    const bgPosition = window.getComputedStyle(
+      this.element
+    ).backgroundPositionX;
+    const newBgPosition =
+      (parseInt(bgPosition) - this.speed) % window.innerWidth;
+    this.element.style.backgroundPositionX = `${newBgPosition}px`;
+    this.animationId = requestAnimationFrame(() => this.moveBackground()); // Store the ID
+  }
+
+  stopMoving() {
+    cancelAnimationFrame(this.animationId); // Cancel the animation using the stored ID
+  }
+}
+
 class Game {
   constructor() {
     this.score = 0;
@@ -111,6 +133,7 @@ class Game {
     this.audioend = new Audio("end.mp3");
     this.dino = new Dino(); // Create a new Dino instance
     // this.obstacle = new Obstacle(5); // Create a new Obstacle instance
+    this.background = new Background(document.getElementById("background"), 3);
     this.gameOver = document.querySelector(".gameOver");
     this.scoreCont = document.getElementById("scoreCont");
     this.lastRun = 0;
@@ -137,6 +160,7 @@ class Game {
       this.handleKey();
       this.createObstacle();
       this.checkCollision();
+      this.background.moveBackground();
       this.obstacles[0].startMoving();
     });
   }
@@ -199,6 +223,7 @@ class Game {
       obstacle.stopMoving();
     }
     this.dino.stopMoving();
+    this.background.stopMoving();
     this.isGameOver = true;
     this.showGameOverWindow();
   }
