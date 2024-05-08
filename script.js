@@ -1,8 +1,6 @@
-class Obstacle {
-  constructor(element, speed) {
-    this.speed = speed;
+class Entity {
+  constructor(element) {
     this.element = element;
-    this.moveInterval = null;
   }
 
   getDimensions() {
@@ -13,6 +11,14 @@ class Obstacle {
       left: parseInt(style.getPropertyValue("left")),
       top: parseInt(style.getPropertyValue("top")),
     };
+  }
+}
+
+class Obstacle extends Entity {
+  constructor(element, speed) {
+    super(element);
+    this.speed = speed;
+    this.moveInterval = null;
   }
 
   startMoving() {
@@ -30,24 +36,16 @@ class Obstacle {
     clearInterval(this.moveInterval);
   }
 }
-class Dino {
+
+class Dino extends Entity {
   constructor() {
-    this.element = document.querySelector(".dino");
+    super(document.querySelector(".dino"));
     this.speed = window.innerWidth * 0.05; // Set speed as 5% of the screen width
     this.moveInterval = null;
     this.isJumping = false;
-    this.maxJumpHeight = 200;
-    this.jumpSpeed = 20;
-  }
-
-  getDimensions() {
-    const style = window.getComputedStyle(this.element, null);
-    return {
-      width: parseInt(style.getPropertyValue("width")),
-      height: parseInt(style.getPropertyValue("height")),
-      left: parseInt(style.getPropertyValue("left")),
-      top: parseInt(style.getPropertyValue("top")),
-    };
+    this.jumpIntervalTime = 20; // Smaller value means faster jump
+    this.gravity = 1;
+    this.velocity = 0; 
   }
 
   jump() {
@@ -55,26 +53,20 @@ class Dino {
       return;
     }
     this.isJumping = true;
-    let start = this.getDimensions().top;
-    let direction = -1;
-    let originalStart = start;
+    let currentPosition = this.getDimensions().top;
+    let originalPosition = currentPosition;
+    this.velocity = -20;
     let jumpInterval = setInterval(() => {
+      this.velocity += this.gravity;
+      currentPosition += this.velocity;
+      this.element.style.top = currentPosition + "px";
       let currentTop = this.getDimensions().top;
-      if (
-        currentTop <= originalStart - this.maxJumpHeight &&
-        direction === -1
-      ) {
-        direction = 1;
-      } else if (currentTop >= originalStart && direction === 1) {
-        direction = -1;
+      if (currentTop >= originalPosition) {
         clearInterval(jumpInterval);
         this.isJumping = false;
-        this.element.style.top = originalStart + "px"; // ensure the dino returns to the original position
-      } else {
-        start += 10 * direction;
-        this.element.style.top = start + "px";
+        this.element.style.top = originalPosition + "px";
       }
-    }, this.jumpSpeed);
+    }, this.jumpIntervalTime);
   }
 
   moveRight() {
@@ -125,52 +117,26 @@ class Background {
   }
 }
 
-class Game {
-  constructor() {
-    this.score = 0;
-    this.isGameOver = false;
-    this.audiogo = new Audio("start.mp3");
-    this.audioend = new Audio("end.mp3");
-    this.dino = new Dino(); // Create a new Dino instance
-    // this.obstacle = new Obstacle(5); // Create a new Obstacle instance
-    this.background = new Background(document.getElementById("background"), 3);
-    this.gameOver = document.querySelector(".gameOver");
-    this.scoreCont = document.getElementById("scoreCont");
-    this.lastRun = 0;
-    this.delay = 5; // delay in milliseconds
-    this.obstacles = []; // Create an array to hold the obstacles
+class Timer {
+  constructor(callback, interval) {
+    this.callback = callback;
+    this.interval = interval;
+    this.timerId = null;
   }
 
   start() {
-    // Display the start screen
-    document.getElementById("startScreen").style.display = "block";
-
-    // Remove any existing event listener from the start button
-    const startButton = document.getElementById("startButton");
-    const oldStartButton = startButton;
-    const newStartButton = oldStartButton.cloneNode(true);
-    oldStartButton.parentNode.replaceChild(newStartButton, oldStartButton);
-
-    // Add an event listener to the start button
-    newStartButton.addEventListener("click", () => {
-      // Hide the start screen
-      document.getElementById("startScreen").style.display = "none";
-
-      // Start the game
-      this.handleKey();
-      this.createObstacle();
-      this.checkCollision();
-      this.background.moveBackground();
-      this.obstacles[0].startMoving();
-    });
+    this.timerId = setInterval(this.callback, this.interval);
   }
 
-  createObstacle() {
-    const obstacleDiv = document.createElement("div");
-    obstacleDiv.classList.add("obstacle");
-    document.querySelector(".container").appendChild(obstacleDiv);
-    const obstacle = new Obstacle(obstacleDiv, window.innerWidth * 0.005);
-    this.obstacles.push(obstacle);
+  stop() {
+    clearInterval(this.timerId);
+    this.timerId = null;
+  }
+}
+
+class KeyboardHandler {
+  constructor(game) {
+    this.game = game;
   }
 
   handleKey() {
@@ -180,7 +146,7 @@ class Game {
   }
 
   processKeyEvent(e) {
-    if (this.isGameOver) {
+    if (this.game.isGameOver) {
       return;
     }
     if (e.type == "keydown") {
@@ -194,27 +160,134 @@ class Game {
     const now = Date.now();
     if (
       (key == "ArrowRight" || key == "ArrowLeft") &&
-      now - this.lastRun < this.delay
+      now - this.game.lastRun < this.game.delay
     ) {
       return;
     }
-    this.lastRun = now;
+    this.game.lastRun = now;
 
     if (key == "ArrowUp") {
-      this.dino.jump();
+      this.game.dino.jump();
     }
     if (key == "ArrowRight") {
-      this.dino.moveRight();
+      this.game.dino.moveRight();
     }
     if (key == "ArrowLeft") {
-      this.dino.moveLeft();
+      this.game.dino.moveLeft();
     }
   }
 
   processKeyUpEvent(key) {
     if (key == "ArrowRight" || key == "ArrowLeft") {
-      this.dino.stopMoving();
+      this.game.dino.stopMoving();
     }
+  }
+}
+
+class CollisionDetector {
+  constructor(game) {
+    this.game = game;
+  }
+
+  checkCollision() {
+    setInterval(() => {
+      const dinoDimensions = this.game.dino.getDimensions();
+
+      for (let obstacle of this.game.obstacles) {
+        const obstacleDimensions = obstacle.getDimensions();
+
+        if (this.isColliding(dinoDimensions, obstacleDimensions)) {
+          this.game.endGame();
+          return;
+        }
+      }
+    }, this.game.delay);
+  }
+
+  isColliding(dinoDimensions, obstacleDimensions) {
+    const dinoRadius = dinoDimensions.width / 2;
+    const obstacleRadius = obstacleDimensions.width / 2;
+
+    const dinoCenter = {
+      x: dinoDimensions.left + dinoRadius,
+      y: dinoDimensions.top + dinoRadius,
+    };
+
+    const obstacleCenter = {
+      x: obstacleDimensions.left + obstacleRadius,
+      y: obstacleDimensions.top + obstacleRadius,
+    };
+
+    const distX = dinoCenter.x - obstacleCenter.x;
+    const distY = dinoCenter.y - obstacleCenter.y;
+
+    const distance = Math.sqrt(distX * distX + distY * distY);
+
+    return distance <= dinoRadius + obstacleRadius;
+  }
+}
+
+class ScoreManager {
+  constructor() {
+    this.score = 0;
+    this.scoreCont = document.getElementById("scoreCont");
+  }
+
+  updateScore() {
+    this.score++;
+    this.scoreCont.innerText = "Your Score: " + this.score;
+  }
+
+  getScore() {
+    return this.score;
+  }
+}
+
+class GameManager {
+  constructor() {
+    this.isGameOver = false;
+    this.audiogo = new Audio("start.mp3");
+    this.audioend = new Audio("end.mp3");
+    this.dino = new Dino(); // Create a new Dino instance
+    this.background = new Background(document.getElementById("background"), 3);
+    this.gameOver = document.querySelector(".gameOver");
+    this.obstacles = []; // Create an array to hold the obstacles
+    this.scoreManager = new ScoreManager();
+    this.timer = new Timer(() => {
+      this.timeCounter++;
+      this.scoreManager.updateScore();
+    }, 100);
+    this.keyboardHandler = new KeyboardHandler(this);
+    this.collisionDetector = new CollisionDetector(this);
+  }
+
+  start() {
+    // Display the start screen
+    document.getElementById("startScreen").style.display = "block";
+
+    const startButton = document.getElementById("startButton");
+
+    // Add an event listener to the start button
+    startButton.addEventListener("click", () => {
+      // Hide the start screen
+      document.getElementById("startScreen").style.display = "none";
+
+      // Start the game
+      this.keyboardHandler.handleKey();
+      this.createObstacle();
+      this.collisionDetector.checkCollision();
+      this.background.moveBackground();
+      this.obstacles[0].startMoving();
+      this.timer.start();
+    });
+  }
+
+  createObstacle() {
+    const obstacleDiv = document.createElement("div");
+    obstacleDiv.classList.add("obstacle");
+    document.querySelector(".container").appendChild(obstacleDiv);
+    const obstacle = new Obstacle(obstacleDiv, window.innerWidth * 0.005);
+    this.obstacles.push(obstacle);
   }
 
   endGame() {
@@ -224,6 +297,7 @@ class Game {
     }
     this.dino.stopMoving();
     this.background.stopMoving();
+    this.timer.stop();
     this.isGameOver = true;
     this.showGameOverWindow();
   }
@@ -233,71 +307,17 @@ class Game {
     const finalScore = document.getElementById("finalScore");
     const restartButton = document.getElementById("restartButton");
 
-    finalScore.innerText = this.score;
+    finalScore.innerText = this.scoreManager.getScore();
     gameOverWindow.style.display = "block";
 
     restartButton.onclick = () => {
       location.reload(); // Reload the page to restart the game
     };
   }
-
-  checkCollision() {
-    let lastScoreUpdate = Date.now();
-
-    setInterval(() => {
-      const dinoDimensions = this.dino.getDimensions();
-
-      for (let obstacle of this.obstacles) {
-        const obstacleDimensions = obstacle.getDimensions();
-
-        if (this.isColliding(dinoDimensions, obstacleDimensions)) {
-          this.endGame();
-          return;
-        }
-
-        if (
-          this.isScoring(dinoDimensions, obstacleDimensions) &&
-          Date.now() - lastScoreUpdate >= 1000
-        ) {
-          this.updateScore();
-          lastScoreUpdate = Date.now();
-        }
-      }
-    }, this.delay);
-  }
-
-  isColliding(dinoDimensions, obstacleDimensions) {
-    return (
-      dinoDimensions.left <
-        obstacleDimensions.left + obstacleDimensions.width &&
-      dinoDimensions.left + dinoDimensions.width > obstacleDimensions.left &&
-      dinoDimensions.top < obstacleDimensions.top + obstacleDimensions.height &&
-      dinoDimensions.top + dinoDimensions.height > obstacleDimensions.top
-    );
-  }
-
-  isScoring(dinoDimensions, obstacleDimensions) {
-    const dinoBottom = dinoDimensions.top + dinoDimensions.height;
-    const dinoRight = dinoDimensions.left + dinoDimensions.width;
-    const obstacleTop = obstacleDimensions.top;
-    const obstacleRight = obstacleDimensions.left + obstacleDimensions.width;
-    const offset = 10;
-
-    return (
-      dinoBottom <= obstacleTop &&
-      dinoDimensions.left > obstacleDimensions.left &&
-      dinoRight < obstacleRight + offset
-    );
-  }
-
-  updateScore() {
-    this.score++;
-    this.scoreCont.innerText = "Your Score: " + this.score;
-  }
 }
 
 // Create a new Game instance
-const game = new Game();
+const game = new GameManager();
 
 // Start the game
 game.start();
