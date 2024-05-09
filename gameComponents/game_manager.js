@@ -19,7 +19,7 @@ export class GameManager {
     const dinoElement = document.createElement("div");
     dinoElement.classList.add("dino");
     document.querySelector(".container").appendChild(dinoElement);
-    const dinoImageUrl = "../images/dino.gif";
+    const dinoImageUrl = "/images/dino.gif";
     const dinoTop = "70vh";
     this.dino = Dino.getInstance(dinoElement, dinoImageUrl, dinoTop);
   }

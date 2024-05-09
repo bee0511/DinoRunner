@@ -38,8 +38,8 @@ export class ItemManager {
     const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
     const imageUrl =
       itemType === Bomb
-        ? "../../../images/bomb.png"
-        : "../../../images/jumpboost.png";
+        ? "/images/bomb.png"
+        : "/images/jumpboost.png";
 
     // Set different top values for Bomb and JumpBoost
     const top = itemType === Bomb ? config.bombHeight : config.jumpBoostHeight;
