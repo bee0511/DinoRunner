@@ -7,6 +7,7 @@ export class ScoreManager {
     this.score = 0;
     this.level = 1;
     this.interval = config.score.interval;
+    this.levelInterval = config.score.levelInterval;
     this.scoreContainer = document.getElementById("score");
     this.levelContainer = document.getElementById("level");
     this.levelContainer.innerText = "Level: 1";
@@ -17,7 +18,7 @@ export class ScoreManager {
 
   updateScore() {
     this.score++;
-    if (this.score % config.scoreInterval === 0) {
+    if (this.score % this.levelInterval === 0) {
       this.level++;
       this.levelContainer.innerText = "Level: " + this.level;
       this.game.obstacleManager.updateObstacleInterval();
