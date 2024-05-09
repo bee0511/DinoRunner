@@ -12,6 +12,32 @@ class Entity {
       top: parseInt(style.getPropertyValue("top")),
     };
   }
+
+  move(direction, speed, allowMoveOutside = false) {
+    clearInterval(this.moveInterval);
+    this.moveInterval = setInterval(() => {
+      const entityPositionX = this.getDimensions().left;
+      const entityWidth = this.getDimensions().width;
+      if (
+        direction === "right" &&
+        (allowMoveOutside ||
+          entityPositionX + entityWidth + speed < window.innerWidth)
+      ) {
+        this.element.style.left = entityPositionX + speed + "px";
+      } else if (
+        direction === "left" &&
+        (allowMoveOutside || entityPositionX - speed > 0)
+      ) {
+        this.element.style.left = entityPositionX - speed + "px";
+      } else {
+        this.stopMoving();
+      }
+    }, 10);
+  }
+
+  stopMoving() {
+    clearInterval(this.moveInterval);
+  }
 }
 
 class Obstacle extends Entity {
@@ -30,26 +56,7 @@ class Obstacle extends Entity {
   }
 
   startMoving() {
-    this.moveInterval = setInterval(() => {
-      const ox = this.getDimensions().left;
-      if (ox + this.speed < 0) {
-        this.element.style.left = window.innerWidth + "px";
-        this.removeObstacle();
-      } else {
-        this.element.style.left = ox - this.speed + "px";
-      }
-    }, 10);
-  }
-
-  removeObstacle() {
-    this.stopMoving();
-    if (this.element.parentNode) {
-      this.element.parentNode.removeChild(this.element);
-    }
-  }
-
-  stopMoving() {
-    clearInterval(this.moveInterval);
+    this.move("left", this.speed, true);
   }
 }
 
@@ -86,28 +93,11 @@ class Dino extends Entity {
   }
 
   moveRight() {
-    clearInterval(this.moveInterval);
-    this.moveInterval = setInterval(() => {
-      const dx = this.getDimensions().left;
-      const dinoWidth = this.getDimensions().width;
-      if (dx + dinoWidth < window.innerWidth) {
-        this.element.style.left = dx + this.speed + "px";
-      }
-    }, 10);
+    this.move("right", this.speed);
   }
 
   moveLeft() {
-    clearInterval(this.moveInterval);
-    this.moveInterval = setInterval(() => {
-      const dx = this.getDimensions().left;
-      if (dx > 0) {
-        this.element.style.left = dx - this.speed + "px";
-      }
-    }, 10);
-  }
-
-  stopMoving() {
-    clearInterval(this.moveInterval);
+    this.move("left", this.speed);
   }
 }
 
@@ -240,7 +230,7 @@ class CollisionDetector {
     setInterval(() => {
       const dinoDimensions = this.game.dino.getDimensions();
 
-      for (let obstacle of this.game.obstacles) {
+      for (let obstacle of this.game.obstacleManager.obstacles) {
         const obstacleDimensions = obstacle.getDimensions();
 
         if (this.isColliding(dinoDimensions, obstacleDimensions)) {
@@ -293,7 +283,7 @@ class ScoreManager {
     if (this.score % 50 === 0) {
       this.level++;
       this.levelContainer.innerText = "Level: " + this.level;
-      this.game.updateObstacleInterval();
+      this.game.obstacleManager.updateObstacleInterval();
     }
     this.scoreContainer.innerText = "Your Score: " + this.score;
   }
@@ -311,15 +301,10 @@ class ScoreManager {
   }
 }
 
-class GameManager {
-  constructor() {
-    this.isGameOver = false;
-    this.dino = new Dino(); // Create a new Dino instance
-    this.background = new Background(document.getElementById("background"), 3);
-    this.obstacles = []; // Create an array to hold the obstacles
-    this.scoreManager = new ScoreManager(this);
-    this.keyboardHandler = new KeyboardManager(this);
-    this.collisionDetector = new CollisionDetector(this);
+class ObstacleManager {
+  constructor(game) {
+    this.game = game;
+    this.obstacles = [];
     this.minObstacleInterval = 500;
     this.maxObstacleInterval = 1500;
     this.obstacleTimer = new RandomIntervalTimer(
@@ -329,26 +314,7 @@ class GameManager {
       this.minObstacleInterval,
       this.maxObstacleInterval
     );
-  }
-
-  start() {
-    // Display the start screen
-    document.getElementById("startScreen").style.display = "block";
-
-    const startButton = document.getElementById("startButton");
-
-    // Add an event listener to the start button
-    startButton.addEventListener("click", () => {
-      // Hide the start screen
-      document.getElementById("startScreen").style.display = "none";
-
-      // Start the game
-      this.keyboardHandler.handleKey();
-      this.collisionDetector.checkCollision();
-      this.background.moveBackground();
-      this.scoreManager.startTimer();
-      this.obstacleTimer.start();
-    });
+    this.collisionDetector = new CollisionDetector(this.game);
   }
 
   createObstacle() {
@@ -382,16 +348,82 @@ class GameManager {
     );
   }
 
-  endGame() {
-    for (let obstacle of this.obstacles) {
-      obstacle.stopMoving();
-      obstacle.removeObstacle();
+  checkObstacles() {
+    setInterval(() => {
+      this.obstacles.forEach((obstacle) => {
+        const obstaclePositionX = obstacle.getDimensions().left;
+        const obstacleWidth = obstacle.getDimensions().width;
+        if (obstaclePositionX + obstacleWidth <= 0) {
+          this.removeObstacle(obstacle);
+        }
+      });
+    }, 10);
+  }
+
+  removeObstacle(obstacle) {
+    obstacle.stopMoving();
+    if (obstacle.element.parentNode) {
+      obstacle.element.parentNode.removeChild(obstacle.element);
     }
+    const index = this.obstacles.indexOf(obstacle);
+    if (index > -1) {
+      this.obstacles.splice(index, 1);
+    }
+  }
+
+  removeObstacles() {
+    while (this.obstacles.length > 0) {
+      this.removeObstacle(this.obstacles[0]);
+    }
+  }
+
+  start() {
+    this.obstacleTimer.start();
+    this.collisionDetector.checkCollision();
+    this.checkObstacles();
+  }
+
+  stop() {
+    this.obstacleTimer.stop();
+    this.removeObstacles();
+  }
+}
+
+class GameManager {
+  constructor() {
+    this.isGameOver = false;
+    this.dino = new Dino(); // Create a new Dino instance
+    this.background = new Background(document.getElementById("background"), 3);
+    this.scoreManager = new ScoreManager(this);
+    this.keyboardHandler = new KeyboardManager(this);
+    this.obstacleManager = new ObstacleManager(this); // Create a new ObstacleManager instance
+  }
+
+  start() {
+    // Display the start screen
+    document.getElementById("startScreen").style.display = "block";
+
+    const startButton = document.getElementById("startButton");
+
+    // Add an event listener to the start button
+    startButton.addEventListener("click", () => {
+      // Hide the start screen
+      document.getElementById("startScreen").style.display = "none";
+
+      // Start the game
+      this.keyboardHandler.handleKey();
+      this.background.moveBackground();
+      this.scoreManager.startTimer();
+      this.obstacleManager.start();
+    });
+  }
+
+  endGame() {
+    this.isGameOver = true;
     this.dino.stopMoving();
     this.background.stopMoving();
     this.scoreManager.stopTimer();
-    this.obstacleTimer.stop();
-    this.isGameOver = true;
+    this.obstacleManager.stop();
     this.showGameOverWindow();
   }
 
