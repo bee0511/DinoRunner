@@ -101,6 +101,92 @@ class Dino extends Entity {
   }
 }
 
+class Item extends Entity {
+  constructor(element, speed) {
+    super(element);
+    this.speed = speed;
+    this.moveInterval = null;
+    this.startMoving();
+  }
+
+  startMoving() {
+    this.move("left", this.speed, true);
+  }
+}
+
+class Bomb extends Item {
+  activate(game) {
+    game.obstacleManager.removeObstacles();
+  }
+}
+
+class ItemManager {
+  constructor(game) {
+    this.game = game;
+    this.items = [];
+    this.collisionDetector = new CollisionDetector(this.game);
+    this.itemTimer = new RandomIntervalTimer(
+      () => {
+        this.createItem();
+      },
+      1000,
+      3000
+    );
+  }
+
+  createItem() {
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add("item");
+    document.querySelector(".container").appendChild(itemDiv);
+
+    const item = new Bomb(itemDiv, this.game.background.getSpeed() / 2);
+    this.items.push(item);
+  }
+
+  checkItemsCollision() {
+    setInterval(() => {
+      const dinoDimensions = this.game.dino.getDimensions();
+
+      for (let item of this.items) {
+        const itemDimensions = item.getDimensions();
+
+        if (
+          this.collisionDetector.isColliding(dinoDimensions, itemDimensions)
+        ) {
+          item.activate(this.game);
+          this.removeItem(item);
+        }
+      }
+    }, 10);
+  }
+
+  removeItem(item) {
+    item.stopMoving();
+    if (item.element.parentNode) {
+      item.element.parentNode.removeChild(item.element);
+    }
+    const index = this.items.indexOf(item);
+    if (index > -1) {
+      this.items.splice(index, 1);
+    }
+  }
+
+  removeItems() {
+    while (this.items.length > 0) {
+      this.removeItem(this.items[0]);
+    }
+  }
+
+  start() {
+    this.itemTimer.start();
+    this.checkItemsCollision();
+  }
+
+  stop() {
+    this.itemTimer.stop();
+    this.removeItems();
+  }
+}
 class Background {
   constructor(element, speed) {
     this.speed = speed;
@@ -116,6 +202,10 @@ class Background {
       (parseInt(bgPosition) - this.speed) % window.innerWidth;
     this.element.style.backgroundPositionX = `${newBgPosition}px`;
     this.animationId = requestAnimationFrame(() => this.moveBackground()); // Store the ID
+  }
+
+  getSpeed() {
+    return this.speed;
   }
 
   stopMoving() {
@@ -226,21 +316,6 @@ class CollisionDetector {
     this.game = game;
   }
 
-  checkCollision() {
-    setInterval(() => {
-      const dinoDimensions = this.game.dino.getDimensions();
-
-      for (let obstacle of this.game.obstacleManager.obstacles) {
-        const obstacleDimensions = obstacle.getDimensions();
-
-        if (this.isColliding(dinoDimensions, obstacleDimensions)) {
-          this.game.endGame();
-          return;
-        }
-      }
-    }, this.game.delay);
-  }
-
   isColliding(dinoDimensions, obstacleDimensions) {
     const dinoRadius = dinoDimensions.width / 2;
     const obstacleRadius = obstacleDimensions.width / 2;
@@ -307,6 +382,8 @@ class ObstacleManager {
     this.obstacles = [];
     this.minObstacleInterval = 500;
     this.maxObstacleInterval = 1500;
+    this.minObstacleSpeed = this.game.background.getSpeed() * 2;
+    this.maxObstacleSpeed = this.game.background.getSpeed() * 3;
     this.obstacleTimer = new RandomIntervalTimer(
       () => {
         this.createObstacle();
@@ -332,7 +409,10 @@ class ObstacleManager {
 
     const obstacle = new Obstacle(
       obstacleDiv,
-      window.innerWidth * 0.005,
+      Math.floor(
+        Math.random() * (this.maxObstacleSpeed - this.minObstacleSpeed + 1) +
+          this.minObstacleSpeed
+      ),
       imageUrl,
       top
     );
@@ -346,6 +426,22 @@ class ObstacleManager {
       this.minObstacleInterval,
       this.maxObstacleInterval
     );
+  }
+
+  checkObstaclesCollision() {
+    setInterval(() => {
+      const dinoDimensions = this.game.dino.getDimensions();
+
+      for (let obstacle of this.obstacles) {
+        const obstacleDimensions = obstacle.getDimensions();
+
+        if (
+          this.collisionDetector.isColliding(dinoDimensions, obstacleDimensions)
+        ) {
+          this.game.endGame();
+        }
+      }
+    }, 10);
   }
 
   checkObstacles() {
@@ -379,8 +475,7 @@ class ObstacleManager {
 
   start() {
     this.obstacleTimer.start();
-    this.collisionDetector.checkCollision();
-    this.checkObstacles();
+    this.checkObstaclesCollision();
   }
 
   stop() {
@@ -397,6 +492,7 @@ class GameManager {
     this.scoreManager = new ScoreManager(this);
     this.keyboardHandler = new KeyboardManager(this);
     this.obstacleManager = new ObstacleManager(this); // Create a new ObstacleManager instance
+    this.itemManager = new ItemManager(this);
   }
 
   start() {
@@ -415,6 +511,7 @@ class GameManager {
       this.background.moveBackground();
       this.scoreManager.startTimer();
       this.obstacleManager.start();
+      this.itemManager.start();
     });
   }
 
@@ -424,6 +521,7 @@ class GameManager {
     this.background.stopMoving();
     this.scoreManager.stopTimer();
     this.obstacleManager.stop();
+    this.itemManager.stop();
     this.showGameOverWindow();
   }
 

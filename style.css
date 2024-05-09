@@ -75,13 +75,24 @@ body {
   width: 100px;
   height: 80px;
   position: absolute;
-  top: 69vh; /* Change this line */
+  top: 69vh; 
   left: 70px;
   transition: left 0.1s linear;
 }
 
 /* Styling obstacle */
 .obstacle {
+  width: 105px;
+  height: 100px;
+  position: absolute;
+  top: 66vh;
+  left: 100vw; /* Set the initial position of the obstacle to the right edge of the window */
+}
+
+/* Styling obstacle */
+.item {
+  background: url(bomb.png) no-repeat;
+  background-size: cover;
   width: 105px;
   height: 100px;
   position: absolute;
