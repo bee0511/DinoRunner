@@ -1,0 +1,123 @@
+import { RandomIntervalTimer } from "../../utils/random_interval_timer.js";
+import { CollisionDetector } from "../../utils/collision_detector.js";
+import { Fireball } from "./fireball.js";
+import { Dragon } from "./dragon.js";
+
+export class ObstacleManager {
+  constructor(game) {
+    this.game = game;
+    this.obstacles = [];
+    this.minObstacleInterval = 500;
+    this.maxObstacleInterval = 1500;
+    this.minObstacleSpeed = this.game.background.getSpeed() * 2;
+    this.maxObstacleSpeed = this.game.background.getSpeed() * 3;
+    this.obstacleTimer = new RandomIntervalTimer(
+      () => {
+        this.createObstacle();
+      },
+      this.minObstacleInterval,
+      this.maxObstacleInterval
+    );
+    this.collisionDetector = new CollisionDetector(this.game);
+  }
+
+  getRandomObstacleType() {
+    const obstacleTypes = [
+      { type: Fireball, imageUrl: "../../../images/fireball.png", top: "40vh" },
+      { type: Dragon, imageUrl: "../../../images/dragon.gif", top: "70vh" },
+    ];
+    const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
+    return obstacleTypes[randomIndex];
+  }
+
+  getRandomSpeed() {
+    return Math.floor(
+      Math.random() * (this.maxObstacleSpeed - this.minObstacleSpeed + 1) +
+        this.minObstacleSpeed
+    );
+  }
+
+  createObstacle() {
+    const obstacleDiv = document.createElement("div");
+    obstacleDiv.classList.add("obstacle");
+    document.querySelector(".container").appendChild(obstacleDiv);
+
+    const obstacleType = this.getRandomObstacleType();
+    const speed = this.getRandomSpeed(
+      this.minObstacleSpeed,
+      this.maxObstacleSpeed
+    );
+
+    const obstacle = new obstacleType.type(
+      obstacleDiv,
+      speed,
+      obstacleType.imageUrl,
+      obstacleType.top
+    );
+    this.obstacles.push(obstacle);
+  }
+
+  updateObstacleInterval() {
+    this.minObstacleInterval -= 50;
+    this.maxObstacleInterval -= 50;
+    this.obstacleTimer.updateInterval(
+      this.minObstacleInterval,
+      this.maxObstacleInterval
+    );
+  }
+
+  checkObstaclesCollision() {
+    setInterval(() => {
+      const dinoDimensions = this.game.dino.getDimensions();
+
+      for (let obstacle of this.obstacles) {
+        const obstacleDimensions = obstacle.getDimensions();
+
+        if (
+          this.collisionDetector.isColliding(dinoDimensions, obstacleDimensions)
+        ) {
+          this.game.endGame();
+        }
+      }
+    }, 10);
+  }
+
+  checkObstacles() {
+    setInterval(() => {
+      this.obstacles.forEach((obstacle) => {
+        const obstaclePositionX = obstacle.getDimensions().left;
+        const obstacleWidth = obstacle.getDimensions().width;
+        if (obstaclePositionX + obstacleWidth <= 0) {
+          this.removeObstacle(obstacle);
+        }
+      });
+    }, 10);
+  }
+
+  removeObstacle(obstacle) {
+    obstacle.stopMoving();
+    if (obstacle.element.parentNode) {
+      obstacle.element.parentNode.removeChild(obstacle.element);
+    }
+    const index = this.obstacles.indexOf(obstacle);
+    if (index > -1) {
+      this.obstacles.splice(index, 1);
+    }
+  }
+
+  removeObstacles() {
+    while (this.obstacles.length > 0) {
+      this.removeObstacle(this.obstacles[0]);
+    }
+  }
+
+  start() {
+    this.obstacleTimer.start();
+    this.checkObstaclesCollision();
+  }
+
+  stop() {
+    this.obstacleTimer.stop();
+    this.removeObstacles();
+  }
+}
