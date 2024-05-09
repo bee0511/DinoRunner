@@ -28,9 +28,21 @@ export class ObstacleManager {
   }
 
   getRandomObstacleType() {
+    let pathPrefix = "";
+    if (window.location.pathname.includes("/Dino-Runner/")) {
+      pathPrefix = "/Dino-Runner";
+    }
     const obstacleTypes = [
-      { type: Fireball, imageUrl: "../../../images/fireball.png", top: "40vh" },
-      { type: Dragon, imageUrl: "../../../images/dragon.gif", top: "70vh" },
+      {
+        type: Fireball,
+        imageUrl: `${pathPrefix}/images/fireball.png`,
+        top: "40vh",
+      },
+      {
+        type: Dragon,
+        imageUrl: `${pathPrefix}/images/dragon.gif`,
+        top: "70vh",
+      },
     ];
     const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
     return obstacleTypes[randomIndex];

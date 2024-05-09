@@ -19,7 +19,11 @@ export class GameManager {
     const dinoElement = document.createElement("div");
     dinoElement.classList.add("dino");
     document.querySelector(".container").appendChild(dinoElement);
-    const dinoImageUrl = "../images/dino.gif";
+    let pathPrefix = "";
+    if (window.location.pathname.includes("/Dino-Runner/")) {
+      pathPrefix = "/Dino-Runner";
+    }
+    const dinoImageUrl = `${pathPrefix}/images/dino.gif`;
     const dinoTop = "70vh";
     this.dino = Dino.getInstance(dinoElement, dinoImageUrl, dinoTop);
   }

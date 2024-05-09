@@ -36,10 +36,16 @@ export class ItemManager {
 
     // Randomly choose between Bomb and JumpBoost
     const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
+
+    let pathPrefix = "";
+    if (window.location.pathname.includes("/Dino-Runner/")) {
+      pathPrefix = "/Dino-Runner";
+    }
+
     const imageUrl =
       itemType === Bomb
-        ? "../../../images/bomb.png"
-        : "../../../images/jumpboost.png";
+        ? `${pathPrefix}/images/bomb.png`
+        : `${pathPrefix}/images/jumpboost.png`;
 
     // Set different top values for Bomb and JumpBoost
     const top = itemType === Bomb ? config.bombHeight : config.jumpBoostHeight;
