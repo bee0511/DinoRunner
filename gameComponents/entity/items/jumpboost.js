@@ -3,8 +3,8 @@ import { Item } from "./item.js";
 import config from "../../config.js";
 
 export class JumpBoost extends Item {
-  constructor(element, imageUrl, top) {
-    super(element, imageUrl, top);
+  constructor(element, top) {
+    super(element, top);
     this.jumpBoostEffect = config.item.jumpBoostEffect;
     this.jumpBoostExpiration = config.item.jumpBoostExpiration;
   }

@@ -28,21 +28,9 @@ export class ObstacleManager {
   }
 
   getRandomObstacleType() {
-    let pathPrefix = "";
-    if (window.location.pathname.includes("/Dino-Runner/")) {
-      pathPrefix = "/Dino-Runner";
-    }
     const obstacleTypes = [
-      {
-        type: Fireball,
-        imageUrl: `${pathPrefix}/images/fireball.png`,
-        top: "40vh",
-      },
-      {
-        type: Dragon,
-        imageUrl: `${pathPrefix}/images/dragon.gif`,
-        top: "70vh",
-      },
+      { type: Fireball, top: "40vh" },
+      { type: Dragon, top: "70vh" },
     ];
     const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
     return obstacleTypes[randomIndex];
@@ -57,10 +45,12 @@ export class ObstacleManager {
 
   createObstacle() {
     const obstacleDiv = document.createElement("div");
-    obstacleDiv.classList.add("obstacle");
-    document.querySelector(".container").appendChild(obstacleDiv);
 
     const obstacleType = this.getRandomObstacleType();
+    obstacleDiv.classList.add(obstacleType.type.name.toLowerCase());
+
+    document.querySelector(".container").appendChild(obstacleDiv);
+
     const speed = this.getRandomSpeed(
       this.minObstacleSpeed,
       this.maxObstacleSpeed
@@ -69,7 +59,6 @@ export class ObstacleManager {
     const obstacle = new obstacleType.type(
       obstacleDiv,
       speed,
-      obstacleType.imageUrl,
       obstacleType.top
     );
     this.obstacles.push(obstacle);

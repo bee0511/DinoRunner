@@ -45,7 +45,8 @@ body {
 }
 
 /* Styling score container */
-#score, #level {
+#score,
+#level {
   font-size: 1rem;
   align-items: center;
   border: var(--border-style);
@@ -70,6 +71,7 @@ body {
 
 /* Styling dino */
 .dino {
+  background: url("../images/dino.gif") repeat-x;
   width: 150px;
   height: 150px;
   position: absolute;
@@ -78,21 +80,39 @@ body {
 }
 
 /* Styling obstacle */
-.obstacle {
+.fireball,
+.dragon {
   width: 105px;
+  height: 100px;
+  position: absolute;
+  top: 66vh;
+  left: 100vw;
+}
+
+.fireball {
+  background: url("../images/fireball.png") repeat-x;
+}
+
+.dragon {
+  background: url("../images/dragon.gif") repeat-x;
+}
+
+/* Styling obstacle */
+.bomb,
+.jumpboost {
+  width: 100px;
   height: 100px;
   position: absolute;
   top: 66vh;
   left: 100vw; /* Set the initial position of the obstacle to the right edge of the window */
 }
 
-/* Styling obstacle */
-.item {
-  width: 100px;
-  height: 100px;
-  position: absolute;
-  top: 66vh;
-  left: 100vw; /* Set the initial position of the obstacle to the right edge of the window */
+.bomb {
+  background: url("../images/bomb.png") repeat-x;
+}
+
+.jumpboost {
+  background: url("../images/jumpboost.png") repeat-x;
 }
 
 .start-screen {

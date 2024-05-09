@@ -1,10 +1,10 @@
 import config from "../config.js";
 
 export class Entity {
-  constructor(element, imageUrl, top) {
+  constructor(element, top) {
     this.element = element;
     this.renderInterval = config.game.renderInterval;
-    this.updateImage(imageUrl);
+    this.element.style.backgroundSize = "contain";
     this.updateTop(top);
   }
 
@@ -39,12 +39,7 @@ export class Entity {
       }
     }, this.renderInterval);
   }
-
-  updateImage(imageUrl) {
-    this.element.style.background = `url(${imageUrl}) no-repeat`;
-    this.element.style.backgroundSize = "contain";
-  }
-
+  
   updateTop(top) {
     this.element.style.top = top;
   }

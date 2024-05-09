@@ -31,26 +31,17 @@ export class ItemManager {
     }
 
     const itemDiv = document.createElement("div");
-    itemDiv.classList.add("item");
-    document.querySelector(".container").appendChild(itemDiv);
 
     // Randomly choose between Bomb and JumpBoost
     const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
 
-    let pathPrefix = "";
-    if (window.location.pathname.includes("/Dino-Runner/")) {
-      pathPrefix = "/Dino-Runner";
-    }
-
-    const imageUrl =
-      itemType === Bomb
-        ? `${pathPrefix}/images/bomb.png`
-        : `${pathPrefix}/images/jumpboost.png`;
+    itemDiv.classList.add(itemType.name.toLowerCase());
+    document.querySelector(".container").appendChild(itemDiv);
 
     // Set different top values for Bomb and JumpBoost
     const top = itemType === Bomb ? config.bombHeight : config.jumpBoostHeight;
 
-    const item = new itemType(itemDiv, imageUrl, top);
+    const item = new itemType(itemDiv, top);
     this.items.push(item);
   }
 
