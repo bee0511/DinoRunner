@@ -29,8 +29,8 @@ export class ObstacleManager {
 
   getRandomObstacleType() {
     const obstacleTypes = [
-      { type: Fireball, imageUrl: "/images/fireball.png", top: "40vh" },
-      { type: Dragon, imageUrl: "/images/dragon.gif", top: "70vh" },
+      { type: Fireball, imageUrl: "/docs/fireball.png", top: "40vh" },
+      { type: Dragon, imageUrl: "/docs/dragon.gif", top: "70vh" },
     ];
     const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
     return obstacleTypes[randomIndex];
