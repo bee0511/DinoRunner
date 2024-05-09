@@ -1,6 +1,9 @@
+import config from "../config.js";
+
 export class Entity {
   constructor(element, imageUrl, top) {
     this.element = element;
+    this.renderInterval = config.game.renderInterval;
     this.updateImage(imageUrl);
     this.updateTop(top);
   }
@@ -34,7 +37,7 @@ export class Entity {
       } else {
         this.stopMoving();
       }
-    }, 10);
+    }, this.renderInterval);
   }
 
   updateImage(imageUrl) {

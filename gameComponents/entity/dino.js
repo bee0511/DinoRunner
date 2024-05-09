@@ -1,14 +1,15 @@
 import { Entity } from "./entity.js";
+
 import config from "../config.js";
 
 export class Dino extends Entity {
   constructor(element, imageUrl, top) {
     super(element, imageUrl, top);
-    this.speed = config.speed;
-    this.moveInterval = null;
+    this.speed = config.dino.speed;
+    this.isJumpBoostActive = false;
     this.isJumping = false;
-    this.jumpIntervalTime = config.jumpIntervalTime;
-    this.gravity = config.gravity;
+    this.jumpInterval = config.dino.jumpInterval;
+    this.gravity = config.game.gravity;
     this.velocity = 0;
   }
   static instance = null;
@@ -38,7 +39,7 @@ export class Dino extends Entity {
         this.isJumping = false;
         this.element.style.top = originalPosition + "px";
       }
-    }, this.jumpIntervalTime);
+    }, this.jumpInterval);
   }
 
   moveRight() {

@@ -1,7 +1,13 @@
-import { Obstacle } from "./obstacle.js";
+import { Entity } from "../entity.js";
 
-export class Dragon extends Obstacle {
+export class Dragon extends Entity {
   constructor(element, speed, imageUrl, top) {
-    super(element, speed, imageUrl, top);
+    super(element, imageUrl, top);
+    this.speed = speed;
+    this.startMoving();
+  }
+
+  startMoving() {
+    this.move("left", this.speed, true);
   }
 }

@@ -8,7 +8,7 @@ import { ObstacleManager } from "./entity/obstacles/obstacle_manager.js";
 export class GameManager {
   constructor() {
     this.isGameOver = false;
-    this.background = new Background(document.getElementById("background"), 3);
+    this.background = new Background(document.getElementById("background"));
     this.scoreManager = new ScoreManager(this);
     this.keyboardHandler = new KeyboardManager(this);
     this.obstacleManager = new ObstacleManager(this);

@@ -3,14 +3,20 @@ import { CollisionDetector } from "../../utils/collision_detector.js";
 import { Fireball } from "./fireball.js";
 import { Dragon } from "./dragon.js";
 
+import config from "../../config.js";
+
 export class ObstacleManager {
   constructor(game) {
     this.game = game;
     this.obstacles = [];
-    this.minObstacleInterval = 500;
-    this.maxObstacleInterval = 1500;
-    this.minObstacleSpeed = this.game.background.getSpeed() * 2;
-    this.maxObstacleSpeed = this.game.background.getSpeed() * 3;
+    this.renderInterval = config.game.renderInterval;
+    this.minObstacleInterval = config.obstacle.minGenerateInterval;
+    this.maxObstacleInterval = config.obstacle.maxGenerateInterval;
+    this.minObstacleSpeed = config.obstacle.minSpeed;
+    this.maxObstacleSpeed = config.obstacle.maxSpeed;
+    this.decreaseObstacleGenerateInterval =
+      config.obstacle.decreaseGenerateInterval;
+    this.obstacleGenerateLimit = config.obstacle.generateLimit;
     this.obstacleTimer = new RandomIntervalTimer(
       () => {
         this.createObstacle();
@@ -58,8 +64,14 @@ export class ObstacleManager {
   }
 
   updateObstacleInterval() {
-    this.minObstacleInterval -= 50;
-    this.maxObstacleInterval -= 50;
+    this.minObstacleInterval -= this.decreaseObstacleGenerateInterval;
+    if (this.minObstacleInterval < this.obstacleGenerateLimit) {
+      this.minObstacleInterval = this.obstacleGenerateLimit;
+    }
+    this.maxObstacleInterval -= this.decreaseObstacleGenerateInterval;
+    if (this.maxObstacleInterval < this.obstacleGenerateLimit) {
+      this.maxObstacleInterval = this.obstacleGenerateLimit;
+    }
     this.obstacleTimer.updateInterval(
       this.minObstacleInterval,
       this.maxObstacleInterval
@@ -79,7 +91,7 @@ export class ObstacleManager {
           this.game.endGame();
         }
       }
-    }, 10);
+    }, this.renderInterval);
   }
 
   checkObstacles() {
@@ -91,7 +103,7 @@ export class ObstacleManager {
           this.removeObstacle(obstacle);
         }
       });
-    }, 10);
+    }, this.renderInterval);
   }
 
   removeObstacle(obstacle) {

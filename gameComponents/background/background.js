@@ -1,6 +1,8 @@
+import config from "../config.js";
+
 export class Background {
-  constructor(element, speed) {
-    this.speed = speed;
+  constructor(element) {
+    this.speed = config.background.speed;
     this.element = element;
     this.animationId = null;
   }

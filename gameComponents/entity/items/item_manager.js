@@ -2,6 +2,7 @@ import { CollisionDetector } from "../../utils/collision_detector.js";
 import { Bomb } from "./bomb.js";
 import { JumpBoost } from "./jumpboost.js";
 import { RandomIntervalTimer } from "../../utils/random_interval_timer.js";
+import config from "../../config.js";
 
 export class ItemManager {
   constructor(game) {
@@ -12,9 +13,10 @@ export class ItemManager {
       () => {
         this.createItem();
       },
-      1000,
-      3000
+      config.itemGenerateMinInterval,
+      config.itemGenerateMaxInterval
     );
+    this.renderInterval = config.game.renderInterval;
   }
 
   createItem() {
@@ -34,14 +36,15 @@ export class ItemManager {
 
     // Randomly choose between Bomb and JumpBoost
     const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
-    const imageUrl = itemType === Bomb ? "../../../images/bomb.png" : "../../../images/jumpboost.png";
+    const imageUrl =
+      itemType === Bomb
+        ? "../../../images/bomb.png"
+        : "../../../images/jumpboost.png";
 
-    const item = new itemType(
-      itemDiv,
-      this.game.background.getSpeed() / 2,
-      imageUrl,
-      "69vh"
-    );
+    // Set different top values for Bomb and JumpBoost
+    const top = itemType === Bomb ? config.bombHeight : config.jumpBoostHeight;
+
+    const item = new itemType(itemDiv, imageUrl, top);
     this.items.push(item);
   }
 
@@ -59,7 +62,7 @@ export class ItemManager {
           this.removeItem(item);
         }
       }
-    }, 10);
+    }, this.renderInterval);
   }
 
   removeItem(item) {
