@@ -70,12 +70,9 @@ body {
 
 /* Styling dino */
 .dino {
-  background: url(dino1.gif) no-repeat;
-  background-size: 100% 100%;
-  width: 100px;
-  height: 80px;
+  width: 150px;
+  height: 150px;
   position: absolute;
-  top: 69vh; 
   left: 70px;
   transition: left 0.1s linear;
 }
@@ -91,9 +88,7 @@ body {
 
 /* Styling obstacle */
 .item {
-  background: url(bomb.png) no-repeat;
-  background-size: cover;
-  width: 105px;
+  width: 100px;
   height: 100px;
   position: absolute;
   top: 66vh;

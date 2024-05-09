@@ -1,6 +1,8 @@
 class Entity {
-  constructor(element) {
+  constructor(element, imageUrl, top) {
     this.element = element;
+    this.updateImage(imageUrl);
+    this.updateTop(top);
   }
 
   getDimensions() {
@@ -35,6 +37,15 @@ class Entity {
     }, 10);
   }
 
+  updateImage(imageUrl) {
+    this.element.style.background = `url(${imageUrl}) no-repeat`;
+    this.element.style.backgroundSize = "contain";
+  }
+
+  updateTop(top) {
+    this.element.style.top = top;
+  }
+
   stopMoving() {
     clearInterval(this.moveInterval);
   }
@@ -42,17 +53,10 @@ class Entity {
 
 class Obstacle extends Entity {
   constructor(element, speed, imageUrl, top) {
-    super(element);
+    super(element, imageUrl, top);
     this.speed = speed;
     this.moveInterval = null;
-    this.updateAppearance(imageUrl, top);
     this.startMoving();
-  }
-
-  updateAppearance(imageUrl, top) {
-    this.element.style.background = `url(${imageUrl}) no-repeat`;
-    this.element.style.backgroundSize = "cover";
-    this.element.style.top = top;
   }
 
   startMoving() {
@@ -60,15 +64,35 @@ class Obstacle extends Entity {
   }
 }
 
+class Fireball extends Obstacle {
+  constructor(element, speed, imageUrl, top) {
+    super(element, speed, imageUrl, top);
+  }
+}
+
+class Dragon extends Obstacle {
+  constructor(element, speed, imageUrl, top) {
+    super(element, speed, imageUrl, top);
+  }
+}
+
 class Dino extends Entity {
-  constructor() {
-    super(document.querySelector(".dino"));
-    this.speed = window.innerWidth * 0.05; // Set speed as 5% of the screen width
+  constructor(element, speed, imageUrl, top) {
+    super(element, imageUrl, top);
+    this.speed = speed;
     this.moveInterval = null;
     this.isJumping = false;
     this.jumpIntervalTime = 20; // Smaller value means faster jump
     this.gravity = 1;
     this.velocity = 0;
+  }
+  static instance = null;
+
+  static getInstance(element, speed, imageUrl, top) {
+    if (!this.instance) {
+      this.instance = new this(element, speed, imageUrl, top);
+    }
+    return this.instance;
   }
 
   jump() {
@@ -102,13 +126,12 @@ class Dino extends Entity {
 }
 
 class Item extends Entity {
-  constructor(element, speed) {
-    super(element);
+  constructor(element, speed, imageUrl, top) {
+    super(element, imageUrl, top);
     this.speed = speed;
     this.moveInterval = null;
     this.startMoving();
   }
-
   startMoving() {
     this.move("left", this.speed, true);
   }
@@ -117,6 +140,15 @@ class Item extends Entity {
 class Bomb extends Item {
   activate(game) {
     game.obstacleManager.removeObstacles();
+  }
+}
+
+class JumpBoost extends Item {
+  activate(game) {
+    game.dino.gravity /= 2;
+    setTimeout(() => {
+      game.dino.gravity *= 2;
+    }, 5000);
   }
 }
 
@@ -135,11 +167,30 @@ class ItemManager {
   }
 
   createItem() {
+    // Check if a Bomb or JumpBoost item already exists
+    const specialItemExists = this.items.some(
+      (item) => item instanceof Bomb || item instanceof JumpBoost
+    );
+
+    // If a Bomb or JumpBoost item already exists, do not create a new one
+    if (specialItemExists) {
+      return;
+    }
+
     const itemDiv = document.createElement("div");
     itemDiv.classList.add("item");
     document.querySelector(".container").appendChild(itemDiv);
 
-    const item = new Bomb(itemDiv, this.game.background.getSpeed() / 2);
+    // Randomly choose between Bomb and JumpBoost
+    const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
+    const imageUrl = itemType === Bomb ? "bomb.png" : "jumpboost.png";
+
+    const item = new itemType(
+      itemDiv,
+      this.game.background.getSpeed() / 2,
+      imageUrl,
+      "69vh"
+    );
     this.items.push(item);
   }
 
@@ -394,27 +445,38 @@ class ObstacleManager {
     this.collisionDetector = new CollisionDetector(this.game);
   }
 
+  getRandomObstacleType() {
+    const obstacleTypes = [
+      { type: Fireball, imageUrl: "fireball.png", top: "40vh" },
+      { type: Dragon, imageUrl: "dragon.gif", top: "70vh" },
+    ];
+    const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
+    return obstacleTypes[randomIndex];
+  }
+
+  getRandomSpeed() {
+    return Math.floor(
+      Math.random() * (this.maxObstacleSpeed - this.minObstacleSpeed + 1) +
+        this.minObstacleSpeed
+    );
+  }
+
   createObstacle() {
     const obstacleDiv = document.createElement("div");
     obstacleDiv.classList.add("obstacle");
     document.querySelector(".container").appendChild(obstacleDiv);
 
-    const obstaclesInfo = [
-      { imageUrl: "fireball.png", top: "40vh" },
-      { imageUrl: "dino_obstacle_1.gif", top: "66vh" },
-    ];
+    const obstacleType = this.getRandomObstacleType();
+    const speed = this.getRandomSpeed(
+      this.minObstacleSpeed,
+      this.maxObstacleSpeed
+    );
 
-    const randomIndex = Math.floor(Math.random() * obstaclesInfo.length);
-    const { imageUrl, top } = obstaclesInfo[randomIndex];
-
-    const obstacle = new Obstacle(
+    const obstacle = new obstacleType.type(
       obstacleDiv,
-      Math.floor(
-        Math.random() * (this.maxObstacleSpeed - this.minObstacleSpeed + 1) +
-          this.minObstacleSpeed
-      ),
-      imageUrl,
-      top
+      speed,
+      obstacleType.imageUrl,
+      obstacleType.top
     );
     this.obstacles.push(obstacle);
   }
@@ -487,7 +549,13 @@ class ObstacleManager {
 class GameManager {
   constructor() {
     this.isGameOver = false;
-    this.dino = new Dino(); // Create a new Dino instance
+    const dinoElement = document.createElement("div");
+    dinoElement.classList.add("dino");
+    document.querySelector(".container").appendChild(dinoElement);
+    const dinoSpeed = window.innerWidth * 0.05;
+    const dinoImageUrl = "dino.gif";
+    const dinoTop = "69vh";
+    this.dino = Dino.getInstance(dinoElement, dinoSpeed, dinoImageUrl, dinoTop);
     this.background = new Background(document.getElementById("background"), 3);
     this.scoreManager = new ScoreManager(this);
     this.keyboardHandler = new KeyboardManager(this);
