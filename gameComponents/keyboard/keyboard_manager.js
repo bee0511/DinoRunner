@@ -39,6 +39,15 @@ export class KeyboardManager {
     if (key == "ArrowLeft") {
       this.game.dino.moveLeft();
     }
+    if (key == "ArrowDown") {
+      this.game.dino.moveDown();
+    }
+    if (key == "1") {
+      this.game.itemManager.activateItem("Bomb");
+    }
+    if (key == "2") {
+      this.game.itemManager.activateItem("JumpBoost");
+    }
   }
 
   processKeyUpEvent(key) {

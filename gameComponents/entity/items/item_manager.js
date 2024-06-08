@@ -55,11 +55,36 @@ export class ItemManager {
         if (
           this.collisionDetector.isColliding(dinoDimensions, itemDimensions)
         ) {
-          item.activate(this.game);
+          this.game.playerItems[item.constructor.name] += 1; // Update player's items
+          document.getElementById(item.constructor.name).innerText =
+            item.constructor.name +
+            ": " +
+            this.game.playerItems[item.constructor.name]; // Update frontend
           this.removeItem(item);
         }
       }
     }, this.renderInterval);
+  }
+
+  activateItem(itemName) {
+    if (this.game.playerItems[itemName] <= 0) return;
+
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add(itemName.toLowerCase());
+    document.querySelector(".container").appendChild(itemDiv);
+
+    const top =
+      itemName === "Bomb" ? config.bombHeight : config.jumpBoostHeight;
+
+    // new a Bomb or JumpBoost instance and activate it
+    const item = new (itemName === "Bomb" ? Bomb : JumpBoost)(itemDiv, top);
+    item.activate(this.game);
+
+    //console log the item name
+    this.game.playerItems[itemName] -= 1;
+    document.getElementById(itemName).innerText =
+      itemName + ": " + this.game.playerItems[itemName]; // Update frontend
+    this.removeItem(item);
   }
 
   removeItem(item) {
