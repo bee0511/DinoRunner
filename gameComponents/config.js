@@ -8,14 +8,14 @@ const config = {
     jumpInterval: 15, // jump interval that compute gravity in milliseconds
   },
   background: {
-    speed: 3,
+    speed: 5,
   },
   obstacle: {
-    minGenerateInterval: 500, // minimum interval for generating obstacles in milliseconds
-    maxGenerateInterval: 1500, // maximum interval for generating obstacles in milliseconds
+    minGenerateInterval: 800, // minimum interval for generating obstacles in milliseconds in the beginning
+    maxGenerateInterval: 1700, // maximum interval for generating obstacles in milliseconds in the beginning
     generateLimit: 100, // Smallest interval for generating obstacles in milliseconds
-    minSpeed: 6, // minimum obstacle speed
-    maxSpeed: 9, // maximum obstacle speed
+    minSpeed: 5, // minimum obstacle speed
+    maxSpeed: 8, // maximum obstacle speed
     decreaseGenerateInterval: 50, // decrease obstacle interval for this interval (For every level decrease the obstacle generate interval)
   },
   score: {

@@ -49,4 +49,10 @@ export class Dino extends Entity {
   moveLeft() {
     this.move("left", this.speed);
   }
+
+  moveDown() {
+    if (this.isJumping) {
+      this.velocity += 20;
+    }
+  }
 }

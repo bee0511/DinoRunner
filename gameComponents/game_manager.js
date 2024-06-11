@@ -13,6 +13,10 @@ export class GameManager {
     this.keyboardHandler = new KeyboardManager(this);
     this.obstacleManager = new ObstacleManager(this);
     this.itemManager = new ItemManager(this);
+    this.playerItems = {
+      Bomb: 0,
+      JumpBoost: 0,
+    };
   }
 
   createDino() {

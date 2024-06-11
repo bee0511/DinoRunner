@@ -10,7 +10,7 @@ export class ScoreManager {
     this.levelInterval = config.score.levelInterval;
     this.scoreContainer = document.getElementById("score");
     this.levelContainer = document.getElementById("level");
-    this.levelContainer.innerText = "Level: 1";
+    this.levelContainer.innerText = "關卡等級: 1";
     this.timer = new FixedIntervalTimer(() => {
       this.updateScore();
     }, this.interval);
@@ -20,10 +20,10 @@ export class ScoreManager {
     this.score++;
     if (this.score % this.levelInterval === 0) {
       this.level++;
-      this.levelContainer.innerText = "Level: " + this.level;
+      this.levelContainer.innerText = "關卡等級: " + this.level;
       this.game.obstacleManager.updateObstacleInterval();
     }
-    this.scoreContainer.innerText = "Your Score: " + this.score;
+    this.scoreContainer.innerText = "分數: " + this.score;
   }
 
   getScore() {

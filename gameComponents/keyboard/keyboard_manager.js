@@ -30,14 +30,23 @@ export class KeyboardManager {
     }
     this.game.lastRun = now;
 
-    if (key == "ArrowUp") {
+    if (key == "ArrowUp" || key == " " || key == "w" || key == "W") {
       this.game.dino.jump();
     }
-    if (key == "ArrowRight") {
+    if (key == "ArrowRight" || key == "d" || key == "D") {
       this.game.dino.moveRight();
     }
-    if (key == "ArrowLeft") {
+    if (key == "ArrowLeft" || key == "a" || key == "A") {
       this.game.dino.moveLeft();
+    }
+    if (key == "ArrowDown" || key == "s" || key == "S") {
+      this.game.dino.moveDown();
+    }
+    if (key == "1") {
+      this.game.itemManager.activateItem("Bomb");
+    }
+    if (key == "2") {
+      this.game.itemManager.activateItem("JumpBoost");
     }
   }
 
