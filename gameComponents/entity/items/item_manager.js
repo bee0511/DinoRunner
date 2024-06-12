@@ -17,6 +17,8 @@ export class ItemManager {
       config.itemGenerateMaxInterval
     );
     this.renderInterval = config.game.renderInterval;
+    this.collisionIntervalId = null;
+    this.removeItemIntervalId = null;
   }
 
   createItem() {
@@ -46,7 +48,7 @@ export class ItemManager {
   }
 
   checkItemsCollision() {
-    setInterval(() => {
+    this.collisionIntervalId = setInterval(() => {
       const dinoDimensions = this.game.dino.getDimensions();
 
       for (let item of this.items) {
@@ -63,6 +65,18 @@ export class ItemManager {
           this.removeItem(item);
         }
       }
+    }, this.renderInterval);
+  }
+
+  removeItemsOutsideScreen() {
+    this.removeItemIntervalId = setInterval(() => {
+      this.items.forEach((item) => {
+        const itemPositionX = item.getDimensions().left;
+        const itemWidth = item.getDimensions().width;
+        if (itemPositionX + itemWidth <= 0) {
+          this.removeItem(item);
+        }
+      });
     }, this.renderInterval);
   }
 
@@ -107,10 +121,13 @@ export class ItemManager {
   start() {
     this.itemTimer.start();
     this.checkItemsCollision();
+    this.removeItemsOutsideScreen();
   }
 
   stop() {
     this.itemTimer.stop();
     this.removeItems();
+    clearInterval(this.collisionIntervalId);
+    clearInterval(this.removeItemIntervalId);
   }
 }
