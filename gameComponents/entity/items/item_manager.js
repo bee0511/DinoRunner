@@ -32,19 +32,19 @@ export class ItemManager {
   }
 
   createItem() {
-    // Check if a Bomb or JumpBoost item already exists
+    const itemInfo = this.getRandomItemType();
+
+    // Check if the randomly selected item type already exists on the field
     const specialItemExists = this.items.some(
-      (item) => item instanceof Bomb || item instanceof JumpBoost
+      (item) => item instanceof itemInfo.type
     );
 
-    // If a Bomb or JumpBoost item already exists, do not create a new one
+    // If the selected item type already exists, do not create a new one
     if (specialItemExists) {
       return;
     }
 
     const itemDiv = document.createElement("div");
-    const itemInfo = this.getRandomItemType();
-
     itemDiv.classList.add(itemInfo.type.name.toLowerCase());
     document.querySelector(".container").appendChild(itemDiv);
 
