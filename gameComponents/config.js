@@ -17,6 +17,8 @@ const config = {
     minSpeed: 5, // minimum obstacle speed
     maxSpeed: 8, // maximum obstacle speed
     decreaseGenerateInterval: 50, // decrease obstacle interval for this interval (For every level decrease the obstacle generate interval)
+    dragonHeight: "70vh", // dragon top position
+    fireballHeight: "40vh", // fireball top position
   },
   score: {
     interval: 100, // update score in milliseconds
@@ -27,7 +29,7 @@ const config = {
     minGenerateInterval: 1000, // minimum interval for generating items
     maxGenerateInterval: 3000, // maximum interval for generating items
     bombHeight: "70vh", // bomb top position
-    jumpBoostHeight: "50vh", // jump boost top position
+    jumpBoostHeight: "70vh", // jump boost top position
     jumpBoostEffect: 2, // value that will divide the gravity
     jumpBoostExpiration: 5000, // jump boost effect expiration time in milliseconds
   },

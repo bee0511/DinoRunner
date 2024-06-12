@@ -23,8 +23,8 @@ export class ItemManager {
 
   getRandomItemType() {
     const itemTypes = [
-      { type: Bomb, top: config.bombHeight },
-      { type: JumpBoost, top: config.jumpBoostHeight },
+      { type: Bomb, top: config.item.bombHeight },
+      { type: JumpBoost, top: config.item.jumpBoostHeight },
     ];
 
     const randomIndex = Math.floor(Math.random() * itemTypes.length);
