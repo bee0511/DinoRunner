@@ -42,7 +42,7 @@ export class GameManager {
       this.createDino();
       this.keyboardHandler.handleKey();
       this.background.moveBackground();
-      this.scoreManager.startTimer();
+      this.scoreManager.start();
       this.obstacleManager.start();
       this.itemManager.start();
     });
@@ -52,7 +52,7 @@ export class GameManager {
     this.isGameOver = true;
     this.dino.stopMoving();
     this.background.stopMoving();
-    this.scoreManager.stopTimer();
+    this.scoreManager.stop();
     this.obstacleManager.stop();
     this.itemManager.stop();
     this.showGameOverWindow();

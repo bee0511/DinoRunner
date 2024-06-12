@@ -21,6 +21,16 @@ export class ItemManager {
     this.removeItemIntervalId = null;
   }
 
+  getRandomItemType() {
+    const itemTypes = [
+      { type: Bomb, top: config.bombHeight },
+      { type: JumpBoost, top: config.jumpBoostHeight },
+    ];
+
+    const randomIndex = Math.floor(Math.random() * itemTypes.length);
+    return itemTypes[randomIndex];
+  }
+
   createItem() {
     // Check if a Bomb or JumpBoost item already exists
     const specialItemExists = this.items.some(
@@ -33,17 +43,12 @@ export class ItemManager {
     }
 
     const itemDiv = document.createElement("div");
+    const itemInfo = this.getRandomItemType();
 
-    // Randomly choose between Bomb and JumpBoost
-    const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
-
-    itemDiv.classList.add(itemType.name.toLowerCase());
+    itemDiv.classList.add(itemInfo.type.name.toLowerCase());
     document.querySelector(".container").appendChild(itemDiv);
 
-    // Set different top values for Bomb and JumpBoost
-    const top = itemType === Bomb ? config.bombHeight : config.jumpBoostHeight;
-
-    const item = new itemType(itemDiv, top);
+    const item = new itemInfo.type(itemDiv, itemInfo.top);
     this.items.push(item);
   }
 
