@@ -17,36 +17,43 @@ export class ItemManager {
       config.itemGenerateMaxInterval
     );
     this.renderInterval = config.game.renderInterval;
+    this.collisionIntervalId = null;
+    this.removeItemIntervalId = null;
+  }
+
+  getRandomItemType() {
+    const itemTypes = [
+      { type: Bomb, top: config.item.bombHeight },
+      { type: JumpBoost, top: config.item.jumpBoostHeight },
+    ];
+
+    const randomIndex = Math.floor(Math.random() * itemTypes.length);
+    return itemTypes[randomIndex];
   }
 
   createItem() {
-    // Check if a Bomb or JumpBoost item already exists
+    const itemInfo = this.getRandomItemType();
+
+    // Check if the randomly selected item type already exists on the field
     const specialItemExists = this.items.some(
-      (item) => item instanceof Bomb || item instanceof JumpBoost
+      (item) => item instanceof itemInfo.type
     );
 
-    // If a Bomb or JumpBoost item already exists, do not create a new one
+    // If the selected item type already exists, do not create a new one
     if (specialItemExists) {
       return;
     }
 
     const itemDiv = document.createElement("div");
-
-    // Randomly choose between Bomb and JumpBoost
-    const itemType = Math.random() < 0.5 ? Bomb : JumpBoost;
-
-    itemDiv.classList.add(itemType.name.toLowerCase());
+    itemDiv.classList.add(itemInfo.type.name.toLowerCase());
     document.querySelector(".container").appendChild(itemDiv);
 
-    // Set different top values for Bomb and JumpBoost
-    const top = itemType === Bomb ? config.bombHeight : config.jumpBoostHeight;
-
-    const item = new itemType(itemDiv, top);
+    const item = new itemInfo.type(itemDiv, itemInfo.top);
     this.items.push(item);
   }
 
   checkItemsCollision() {
-    setInterval(() => {
+    this.collisionIntervalId = setInterval(() => {
       const dinoDimensions = this.game.dino.getDimensions();
 
       for (let item of this.items) {
@@ -63,6 +70,18 @@ export class ItemManager {
           this.removeItem(item);
         }
       }
+    }, this.renderInterval);
+  }
+
+  removeItemsOutsideScreen() {
+    this.removeItemIntervalId = setInterval(() => {
+      this.items.forEach((item) => {
+        const itemPositionX = item.getDimensions().left;
+        const itemWidth = item.getDimensions().width;
+        if (itemPositionX + itemWidth <= 0) {
+          this.removeItem(item);
+        }
+      });
     }, this.renderInterval);
   }
 
@@ -107,10 +126,13 @@ export class ItemManager {
   start() {
     this.itemTimer.start();
     this.checkItemsCollision();
+    this.removeItemsOutsideScreen();
   }
 
   stop() {
     this.itemTimer.stop();
     this.removeItems();
+    clearInterval(this.collisionIntervalId);
+    clearInterval(this.removeItemIntervalId);
   }
 }

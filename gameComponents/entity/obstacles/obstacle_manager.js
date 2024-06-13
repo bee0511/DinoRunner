@@ -25,12 +25,14 @@ export class ObstacleManager {
       this.maxObstacleInterval
     );
     this.collisionDetector = new CollisionDetector(this.game);
+    this.collisionIntervalId = null;
+    this.removeObstacleIntervalId = null;
   }
 
   getRandomObstacleType() {
     const obstacleTypes = [
-      { type: Fireball, top: "40vh" },
-      { type: Dragon, top: "70vh" },
+      { type: Fireball, top: config.obstacle.fireballHeight },
+      { type: Dragon, top: config.obstacle.dragonHeight },
     ];
     const randomIndex = Math.floor(Math.random() * obstacleTypes.length);
     return obstacleTypes[randomIndex];
@@ -80,7 +82,7 @@ export class ObstacleManager {
   }
 
   checkObstaclesCollision() {
-    setInterval(() => {
+    this.collisionIntervalId = setInterval(() => {
       const dinoDimensions = this.game.dino.getDimensions();
 
       for (let obstacle of this.obstacles) {
@@ -95,8 +97,8 @@ export class ObstacleManager {
     }, this.renderInterval);
   }
 
-  checkObstacles() {
-    setInterval(() => {
+  removeObstaclesOutsideScreen() {
+    this.removeObstacleIntervalId = setInterval(() => {
       this.obstacles.forEach((obstacle) => {
         const obstaclePositionX = obstacle.getDimensions().left;
         const obstacleWidth = obstacle.getDimensions().width;
@@ -127,10 +129,13 @@ export class ObstacleManager {
   start() {
     this.obstacleTimer.start();
     this.checkObstaclesCollision();
+    this.removeObstaclesOutsideScreen();
   }
 
   stop() {
     this.obstacleTimer.stop();
     this.removeObstacles();
+    clearInterval(this.collisionIntervalId);
+    clearInterval(this.removeObstacleIntervalId);
   }
 }
