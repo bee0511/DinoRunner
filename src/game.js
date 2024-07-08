@@ -1,4 +1,4 @@
-import { GameManager } from "../gameComponents/game_manager.js";
+import { GameManager } from "./gameComponents/game_manager.js";
 
 // Create a new Game instance
 const game = new GameManager();
